@@ -13,8 +13,9 @@ def read_events() -> EventListSchema:
 
 @router.post("/")  #same url one acting as get another one as post method
 def create_events(payload: EventCreateSchema) -> EventSchema:
-    print(payload)
-    return {"id":123}
+    print(payload.page)
+    data= payload.model_dump() # making a dict outof the payload
+    return {"id":123, **data} #destructuring the data
 
 
 @router.get("/{event_id}")
@@ -23,5 +24,5 @@ def get_event(event_id: int) -> EventSchema:
 
 @router.put("/{event_id}")
 def update_event(event_id:int, payload: EventUpdateSchema) -> EventSchema:
-    print(payload)
-    return {"id":event_id}
+    print(payload.description)
+    return {"id":event_id,"description": payload.description}
