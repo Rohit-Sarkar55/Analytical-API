@@ -1,0 +1,19 @@
+Project Flow
+
+Save the workspace
+create the virtual enviorment
+    $ python3.13 -m venv venv
+
+acitvate the virtual enviorment
+    $ source venv/Scripts/activate (Windows)
+
+in requirements file you can store the dependencies ( with versions optional) 
+and can take the reference from this to install the packages
+    $ pip install -r requirements.txt
+
+
+RUN:
+to run the application up
+1. you install the fastapi[standard] and run $ fastapi dev main.py 
+OR
+2. you install fastapi,uvicorn and run $ uvicorn main:app --reload
