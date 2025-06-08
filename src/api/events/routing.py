@@ -1,18 +1,21 @@
 import os
-from fastapi import APIRouter , Depends
+from fastapi import APIRouter , Depends , HTTPException
 from api.db.config import DATABASE_URL
 from api.db.session import get_session
-from sqlmodel import Session
+from sqlmodel import Session , select
 from .models import EventModel , EventListSchema , EventCreateSchema, EventUpdateSchema
 
 router = APIRouter()
 
 
 
-@router.get("/")
-def read_events() -> EventListSchema:
-    print(os.environ.get("DATABASE_URL"), DATABASE_URL)
-    results = [{"id":1},{"id":2},{"id":4}]
+@router.get("/",response_model=EventListSchema)
+def read_events(session: Session = Depends(get_session)) :
+    # print(os.environ.get("DATABASE_URL"), DATABASE_URL)
+
+    query = select(EventModel).order_by(EventModel.id.desc()).limit(5)
+    results = session.exec(query).all()
+
     return {
         "results": results,
         "count": len(results)
@@ -33,9 +36,14 @@ def create_events(
     return obj
 
 
-@router.get("/{event_id}")
-def get_event(event_id: int) -> EventModel:
-    return {"id": event_id}
+@router.get("/{event_id}",response_model=EventModel)
+def get_event(event_id: int, session: Session = Depends(get_session)):
+    query = select(EventModel).where(EventModel.id == event_id)
+    result = session.exec(query).first()
+    if not result:
+        raise HTTPException(status_code=404, detail="event not found")
+    return result
+
 
 @router.put("/{event_id}")
 def update_event(event_id:int, payload: EventUpdateSchema) -> EventModel:
