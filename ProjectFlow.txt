@@ -17,3 +17,6 @@ to run the application up
 1. you install the fastapi[standard] and run $ fastapi dev main.py 
 OR
 2. you install fastapi,uvicorn and run $ uvicorn main:app --reload
+
+
+pip install python-decouple
