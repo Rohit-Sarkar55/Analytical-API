@@ -2,8 +2,8 @@ import os
 from fastapi import APIRouter , Depends , HTTPException
 from api.db.config import DATABASE_URL
 from api.db.session import get_session
-from sqlmodel import Session , select
-from .models import EventModel , EventListSchema , EventCreateSchema, EventUpdateSchema
+from sqlmodel import Session , select 
+from .models import EventModel , EventListSchema , EventCreateSchema, EventUpdateSchema, get_utc_now
 
 router = APIRouter()
 
@@ -13,7 +13,7 @@ router = APIRouter()
 def read_events(session: Session = Depends(get_session)) :
     # print(os.environ.get("DATABASE_URL"), DATABASE_URL)
 
-    query = select(EventModel).order_by(EventModel.id.desc()).limit(5)
+    query = select(EventModel).order_by(EventModel.updated_at.desc()).limit(5)
     results = session.exec(query).all()
 
     return {
@@ -57,10 +57,22 @@ def update_event(event_id:int, payload: EventUpdateSchema , session: Session = D
 
     for k,v in data.items():
         setattr(obj, k, v)
-
+    obj.updated_at= get_utc_now()
     session.add(obj)
     session.commit()
     session.refresh(obj)
     return obj
    
     # return {"id":event_id,"description": payload.description}
+
+@router.delete("/{event_id}")
+def delete_event(event_id: int , session: Session=  Depends(get_session)):
+    query = select(EventModel).where(EventModel.id == event_id)
+    obj = session.exec(query).first()
+    
+    if not obj:
+        raise HTTPException(status_code=404, detail="event not found")
+    
+    session.delete(obj)
+    session.commit()
+    return obj
